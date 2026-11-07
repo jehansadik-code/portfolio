@@ -30,7 +30,7 @@ function pretty(value: unknown, type?: Field["type"]) {
 }
 
 function blankDraft(collection: Collection) {
-  return Object.fromEntries(collection.fields.map((field) => [field.name, field.type === "checkbox" ? true : field.type === "number" ? 0 : field.type === "select" ? field.options?.[0] || "" : ""]));
+  return Object.fromEntries(collection.fields.map((field) => [field.name, field.type === "checkbox" ? true : field.type === "number" ? 0 : field.type === "tags" ? [] : field.type === "select" ? field.options?.[0] || "" : ""]));
 }
 
 async function adminRequest(path: string, method = "GET", body?: Row) {
@@ -99,7 +99,7 @@ export default function AdminStudio() {
   async function saveDraft(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); if (!draft || active.readOnly) return; setSaving(true); setNotice("");
     const payload = { ...draft }; delete payload.id; delete payload.created_at; delete payload.updated_at;
-    Object.keys(payload).forEach((key) => { if (payload[key] === "") payload[key] = null; });
+    active.fields.filter((field) => field.type === "tags").forEach((field) => { if (!Array.isArray(payload[field.name])) payload[field.name] = []; });
     try {
       const existing = typeof draft.id === "string";
       const result = await adminRequest(existing ? `${active.id}?id=eq.${encodeURIComponent(draft.id as string)}` : active.id, existing ? "PATCH" : "POST", payload);
