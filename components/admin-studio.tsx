@@ -62,9 +62,9 @@ export default function AdminStudio() {
 
   async function loadCollection() {
     if (!allowed) return;
-    setBusy(true); setNotice("");
+    setBusy(true); setNotice(""); setRows([]);
     try {
-      const select = active.fields.map((field) => field.name).concat(["id", "slug"].filter((field) => !active.fields.some((item) => item.name === field))).join(",");
+      const select = active.fields.map((field) => field.name).concat(["id"].filter((field) => !active.fields.some((item) => item.name === field))).join(",");
       const order = active.id === "contact_messages" ? "created_at.desc" : active.singleton ? "created_at.asc" : "sort_order.asc";
       setRows((await adminRequest(`${active.id}?select=${select}&order=${order}`)) || []);
     } catch (error) { setNotice(error instanceof Error ? error.message : "Could not load this section."); }
