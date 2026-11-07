@@ -6,9 +6,10 @@ import {
   Send, Sparkles, Trophy, X,
 } from "lucide-react";
 import { Fragment, type ReactNode, useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import type { LinkableItem, PortfolioData, PortfolioLinks, PortfolioProject } from "@/lib/portfolio-data";
-import { createBrowserSupabaseClient } from "@/lib/supabase/client";
-import ContactForm from "@/components/contact-form";
+
+const ContactForm = dynamic(() => import("@/components/contact-form"), { ssr: false, loading: () => <div className="contact-form contact-form-loading" aria-hidden="true" /> });
 
 const navItems = ["About", "Education", "Experience", "Projects", "Awards", "Certificates", "Contact"];
 const sectionIcons = { About: MessageCircle, Education: GraduationCap, Experience: BriefcaseBusiness, Projects: Code2, Awards: Trophy };
@@ -44,17 +45,21 @@ export default function Portfolio({ data }: { data: PortfolioData }) {
   const scrollTo = (id: string) => { document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }); setMenuOpen(false); };
 
   useEffect(() => {
-    const supabase = createBrowserSupabaseClient();
-    if (!supabase) return;
     let active = true;
-    void Promise.all([
+    void import("@/lib/supabase/client").then(({ createBrowserSupabaseClient }) => {
+      const supabase = createBrowserSupabaseClient();
+      if (!supabase) return null;
+      return Promise.all([
       supabase.from("projects").select("title, subtitle, description, tags, visual_type, project_url, image_url").eq("published", true).order("sort_order"),
       supabase.from("education").select("slug, title, organization, date_label, description, link_url, image_url").eq("published", true).order("sort_order"),
       supabase.from("experience").select("slug, title, organization, date_label, description, link_url, image_url").eq("published", true).order("sort_order"),
       supabase.from("certificates").select("slug, title, organization, date_label, description, link_url, image_url").eq("published", true).order("sort_order"),
       supabase.from("awards").select("slug, title, organization, date_label, description, link_url, image_url").eq("published", true).order("sort_order"),
       supabase.from("portfolio_profile").select("full_name, role, headline, bio, about_text, location, email, avatar_url, skills, tools, linkedin_url, github_url, resume_url").eq("handle", "jehan-sadik").maybeSingle(),
-    ]).then(([projectResponse, educationResponse, experienceResponse, certificateResponse, awardResponse, profileResponse]) => {
+      ]);
+    }).then((responses) => {
+      if (!responses) return;
+      const [projectResponse, educationResponse, experienceResponse, certificateResponse, awardResponse, profileResponse] = responses;
       if (!active) return;
       if (projectResponse.data?.length) setProjects(projectResponse.data.map((project) => ({ title: project.title, subtitle: project.subtitle, copy: project.description, tags: project.tags, kind: project.visual_type === "space" ? "space" : "home", linkUrl: project.project_url, imageUrl: project.image_url })));
       if (educationResponse.data?.length) setEducation(educationResponse.data.map(toLinkableItem));
@@ -74,7 +79,7 @@ export default function Portfolio({ data }: { data: PortfolioData }) {
     </nav></header>
 
     <section className="hero" id="home"><div className="hero-glow glow-left" /><div className="hero-glow glow-right" />
-      <div className="wrap hero-content"><div className="portrait-wrap"><div className="portrait"><img src={profile.avatar || "https://images.unsplash.com/photo-1615109398623-88346a601842?auto=format&fit=crop&w=640&q=84"} alt={`Portrait of ${profile.name}`} /></div><span className="portrait-orbit orbit-one" /><span className="portrait-orbit orbit-two" /></div>
+      <div className="wrap hero-content"><div className="portrait-wrap"><div className="portrait"><img src={profile.avatar || "https://images.unsplash.com/photo-1615109398623-88346a601842?auto=format&fit=crop&w=480&q=70&fm=webp"} alt={`Portrait of ${profile.name}`} width="205" height="205" fetchPriority="high" decoding="async" /></div><span className="portrait-orbit orbit-one" /><span className="portrait-orbit orbit-two" /></div>
         <div className="hero-copy"><p className="eyebrow"><Sparkles size={15} /> Welcome to my portfolio</p><h1>{profile.name}</h1><span className="accent-line" /><h2>{profile.role}</h2><p className="hero-role">{profile.headline}</p><p className="hero-bio">{profile.bio}</p><div className="hero-actions"><button className="button button-primary" onClick={() => scrollTo("projects")}><Code2 size={19} /> View projects</button><button className="button button-ghost" onClick={() => scrollTo("contact")}><Send size={18} /> Contact me</button></div></div>
         <div className="hero-city" aria-hidden="true"><div className="monument"><span /><span /><span /><span /><span /></div><div className="city-label">DHAKA · BANGLADESH</div></div>
       </div><div className="wrap expertise-row">{profile.skills.map((skill, index) => <div className="expertise" key={skill}>{index === 0 ? <Code2 /> : index === 1 ? <Cpu /> : index === 2 ? <Layers3 /> : index === 3 ? <Atom /> : <Sparkles />}<span>{skill}</span></div>)}</div>

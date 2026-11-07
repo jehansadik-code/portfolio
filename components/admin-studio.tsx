@@ -102,7 +102,7 @@ export default function AdminStudio() {
     const safeName = file.name.toLowerCase().replace(/[^a-z0-9._-]/g, "-");
     const randomId = globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
     const path = `content/${active.id}/${randomId}-${safeName}`;
-    const { error } = await client.storage.from("portfolio-media").upload(path, file, { contentType: file.type, upsert: false });
+    const { error } = await client.storage.from("portfolio-media").upload(path, file, { contentType: file.type, cacheControl: "31536000", upsert: false });
     if (error) { setNotice(error.message); setSaving(false); return; }
     const { data: publicUrl } = client.storage.from("portfolio-media").getPublicUrl(path);
     updateDraft(field, publicUrl.publicUrl);
