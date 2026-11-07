@@ -3,6 +3,7 @@ import type { Database } from "@/lib/supabase/database.types";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+let browserClient: ReturnType<typeof createClient<Database>> | null = null;
 
 export const isSupabaseConfigured = Boolean(url && anonKey);
 
@@ -13,7 +14,9 @@ export function getSupabasePublicConfig() {
 /** Returns null locally until the public Supabase environment values are supplied. */
 export function createBrowserSupabaseClient() {
   if (!url || !anonKey) return null;
-  return createClient<Database>(url, anonKey, {
+  if (browserClient) return browserClient;
+  browserClient = createClient<Database>(url, anonKey, {
     auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
   });
+  return browserClient;
 }

@@ -39,7 +39,7 @@ async function adminRequest(path: string, method = "GET", body?: Row) {
   const session = client ? (await client.auth.getSession()).data.session : null;
   if (!config || !session) throw new Error("Your admin session has expired. Please sign in again.");
   const response = await fetch(`${config.url}/rest/v1/${path}`, { method, headers: { apikey: config.anonKey, Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json", Prefer: "return=representation" }, body: body ? JSON.stringify(body) : undefined });
-  if (!response.ok) { const problem = await response.json().catch(() => null) as { message?: string } | null; throw new Error(problem?.message || "Supabase request failed."); }
+  if (!response.ok) { const problem = await response.json().catch(() => null) as { message?: string; details?: string; hint?: string; code?: string } | null; const message = [problem?.message, problem?.details, problem?.hint, problem?.code && `Code: ${problem.code}`].filter(Boolean).join(" — "); throw new Error(message || "Supabase request failed."); }
   return response.status === 204 ? null : await response.json() as Row[];
 }
 
