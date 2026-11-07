@@ -5,7 +5,7 @@ A responsive portfolio built with Next.js, React, TypeScript, Tailwind CSS, and 
 ## Supabase setup
 
 1. Create a Supabase project.
-2. Open its SQL Editor and run the SQL scripts in filename order from [supabase/migrations](./supabase/migrations): `202611070001_initial_portfolio.sql`, `202611070002_linkable_portfolio_content.sql`, `202611070003_admin_studio.sql`, then `202611070004_portfolio_media.sql`.
+2. Open its SQL Editor and run the SQL scripts in filename order from [supabase/migrations](./supabase/migrations): `202611070001_initial_portfolio.sql`, `202611070002_linkable_portfolio_content.sql`, `202611070003_admin_studio.sql`, `202611070004_portfolio_media.sql`, then `202611070005_projects_tags_repair.sql`.
 3. Copy `.env.example` to `.env`, then add the project URL and publishable anon key from **Project Settings → API**. Never put a service-role key in a `NEXT_PUBLIC_` variable.
 4. Run `npm install`, then `npm run dev`.
 

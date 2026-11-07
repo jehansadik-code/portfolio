@@ -33,6 +33,19 @@ function blankDraft(collection: Collection) {
   return Object.fromEntries(collection.fields.map((field) => [field.name, field.type === "checkbox" ? true : field.type === "number" ? 0 : field.type === "tags" ? [] : field.type === "select" ? field.options?.[0] || "" : ""]));
 }
 
+function validateDraft(collection: Collection, draft: Row) {
+  const text = (name: string) => String(draft[name] || "").trim();
+  for (const field of collection.fields) if (field.required && !text(field.name)) return `${field.label} is required.`;
+  if (collection.id === "projects") {
+    if (!/^[a-z0-9-]{3,100}$/.test(text("slug"))) return "Slug must use 3–100 lowercase letters, numbers, and hyphens only.";
+    if (text("title").length < 2) return "Project title must contain at least 2 characters.";
+    if (text("description").length < 10) return "Project description must contain at least 10 characters.";
+    if (text("description").length > 2000) return "Project description must be under 2,000 characters.";
+    if (Array.isArray(draft.tags) && draft.tags.length > 8) return "Add no more than 8 project tags.";
+  }
+  return null;
+}
+
 async function adminRequest(path: string, method = "GET", body?: Row) {
   const config = getSupabasePublicConfig();
   const client = createBrowserSupabaseClient();
@@ -99,7 +112,10 @@ export default function AdminStudio() {
   async function saveDraft(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); if (!draft || active.readOnly) return; setSaving(true); setNotice("");
     const payload = { ...draft }; delete payload.id; delete payload.created_at; delete payload.updated_at;
-    active.fields.filter((field) => field.type === "tags").forEach((field) => { if (!Array.isArray(payload[field.name])) payload[field.name] = []; });
+    active.fields.filter((field) => field.type === "tags").forEach((field) => { payload[field.name] = Array.isArray(payload[field.name]) ? [...new Set((payload[field.name] as unknown[]).map((tag) => String(tag).trim()).filter(Boolean))] : []; });
+    active.fields.filter((field) => field.type !== "tags" && field.type !== "checkbox" && field.type !== "number").forEach((field) => { const value = payload[field.name]; if (typeof value === "string") payload[field.name] = value.trim(); });
+    const validationError = validateDraft(active, payload);
+    if (validationError) { setNotice(validationError); setSaving(false); return; }
     try {
       const existing = typeof draft.id === "string";
       const result = await adminRequest(existing ? `${active.id}?id=eq.${encodeURIComponent(draft.id as string)}` : active.id, existing ? "PATCH" : "POST", payload);
