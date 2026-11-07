@@ -7,9 +7,9 @@ export type Database = {
   public: {
     Tables: {
       portfolio_profile: {
-        Row: { id: string; handle: string; full_name: string; role: string; bio: string; location: string; email: string; avatar_url: string | null; linkedin_url: string | null; github_url: string | null; resume_url: string | null; created_at: string; updated_at: string };
-        Insert: Partial<{ handle: string; full_name: string; role: string; bio: string; location: string; email: string; avatar_url: string | null; linkedin_url: string | null; github_url: string | null; resume_url: string | null }>;
-        Update: Partial<{ full_name: string; role: string; bio: string; location: string; email: string; avatar_url: string | null; linkedin_url: string | null; github_url: string | null; resume_url: string | null }>;
+        Row: { id: string; handle: string; full_name: string; role: string; headline: string; bio: string; about_text: string; skills: string[]; tools: string[]; location: string; email: string; avatar_url: string | null; linkedin_url: string | null; github_url: string | null; resume_url: string | null; created_at: string; updated_at: string };
+        Insert: Partial<{ handle: string; full_name: string; role: string; headline: string; bio: string; about_text: string; skills: string[]; tools: string[]; location: string; email: string; avatar_url: string | null; linkedin_url: string | null; github_url: string | null; resume_url: string | null }>;
+        Update: Partial<{ full_name: string; role: string; headline: string; bio: string; about_text: string; skills: string[]; tools: string[]; location: string; email: string; avatar_url: string | null; linkedin_url: string | null; github_url: string | null; resume_url: string | null }>;
         Relationships: [];
       };
       projects: {
