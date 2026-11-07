@@ -1,5 +1,5 @@
 type LinkableRow = {
-  id: string; slug: string; title: string; organization: string; date_label: string; description: string | null; link_url: string | null; published: boolean; sort_order: number; created_at: string; updated_at: string;
+  id: string; slug: string; title: string; organization: string; date_label: string; description: string | null; link_url: string | null; image_url: string | null; published: boolean; sort_order: number; created_at: string; updated_at: string;
 };
 type LinkableInsert = Partial<Omit<LinkableRow, "id" | "created_at" | "updated_at">>;
 
